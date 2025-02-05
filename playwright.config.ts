@@ -29,8 +29,11 @@ export default defineConfig({
     baseURL: "https://www.opencolleges.edu.au",
     browserName: "chromium",
     headless: true,
-    screenshot: "only-on-failure",
+    screenshot: "on",
     trace: "on",
+    video: {
+      mode: "on",
+    },
   },
 
   /* Configure projects for major browsers */
