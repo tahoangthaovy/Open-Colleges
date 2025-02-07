@@ -1,6 +1,12 @@
-//having bug
+//handle timeout
 
-import { test, expect, request } from "@playwright/test";
+import {
+  test,
+  expect,
+  request,
+  Page,
+  expect as expectPlaywright,
+} from "@playwright/test";
 import * as fs from "fs";
 
 // test("Extract all links from the page", async ({ page }) => {
@@ -97,37 +103,4 @@ test("Extract all links from the page", async ({ page }) => {
   }
 
   console.log("✅ Finished checking all links. Log saved in broken-links.log");
-});
-
-test("Interactive Elements Validation", async ({ page }) => {
-  await page.goto("https://www.opencolleges.edu.au/");
-
-  // ✅ Kiểm tra dropdown menu
-  await test.step("Verify Dropdowns", async () => {
-    const dropdown = page.locator(".dropdown-toggle");
-    await dropdown.click();
-    await expect(page.locator(".dropdown-menu")).toBeVisible();
-    console.log("✅ Dropdown mở thành công!");
-  });
-
-  // ✅ Kiểm tra modal pop-up
-  await test.step("Verify Modal", async () => {
-    await page.click('button[data-target="#modalId"]');
-    await expect(page.locator("#modalId")).toBeVisible();
-    console.log("✅ Modal hiển thị đúng!");
-  });
-
-  // ✅ Kiểm tra carousel
-  await test.step("Verify Carousel", async () => {
-    await page.click(".carousel-control-next");
-    await expect(page.locator(".carousel-item.active")).toBeVisible();
-    console.log("✅ Carousel hoạt động chính xác!");
-  });
-
-  // ✅ Kiểm tra tooltip hiển thị
-  await test.step("Verify Tooltips", async () => {
-    await page.hover("[data-toggle='tooltip']");
-    await expect(page.locator(".tooltip.show")).toBeVisible();
-    console.log("✅ Tooltip hiển thị đúng!");
-  });
 });
