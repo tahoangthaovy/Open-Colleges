@@ -1,18 +1,16 @@
 import { Page, Locator } from "@playwright/test";
+import { BasePage } from "./BasePage";
 
-export class HomePage {
-  private readonly page: Page;
-
-  // Locators
+export class HomePage extends BasePage {
   readonly logo: Locator;
   readonly courseSearchInput: Locator;
   readonly acceptCookiesBtn: Locator;
 
   constructor(page: Page) {
+    super(page);
     this.page = page;
-    this.logo = page.locator(
-      '//*[@id="shopify-section-sections--24248581325119__header"]/div/div/h1/a/div/img'
-    );
+    this.logo = page.locator("//img[contains(@class, 'header__heading-logo')]");
+
     this.courseSearchInput = page.locator(
       '//*[@id="hero-banner-search-input"]'
     );
@@ -20,7 +18,7 @@ export class HomePage {
   }
 
   async navigate() {
-    await this.page.goto("https://www.opencolleges.edu.au/");
+    await super.navigate();
     await this.handleCookies();
     await this.page.waitForLoadState("networkidle");
   }
@@ -35,23 +33,23 @@ export class HomePage {
     await this.courseSearchInput.fill(keyword);
     await this.page.keyboard.press("Enter");
 
-    // Chờ trang hiển thị tiêu đề "Search results for"
+    // Wait for search results page to load
     await this.page.waitForSelector(
       '//h1[contains(text(), "Search results for")]',
       { timeout: 10000 }
     );
 
-    // Chờ danh sách khóa học xuất hiện
+    // Wait for the search results to load
     await this.page.waitForSelector('//*[@id="ProductGridContainer"]', {
       timeout: 10000,
     });
 
-    // Kiểm tra số lượng kết quả tìm thấy
+    // Check if any courses were found
     const count = await this.page
       .locator('//*[@id="ProductGridContainer"]')
       .count();
     if (count === 0) {
-      throw new Error("Không tìm thấy khóa học nào.");
+      throw new Error("Cannot find any courses with the given keyword");
     }
   }
 }

@@ -1,13 +1,16 @@
 //CAPTCHA needs to handle
 
 import { test, expect } from "@playwright/test";
+import { BASE_URL } from "../config";
+const path = "pages/contact";
 
 test.describe("Form Validation", () => {
-  test("Submit form thiếu required fields", async ({ page }) => {
-    await page.goto("/pages/contact");
+  test("Submit form missing required fields", async ({ page }) => {
+    await page.goto(`${BASE_URL}/${path}`);
+
     await page.click('button[type="submit"]');
 
-    // Kiểm tra nếu có bất kỳ input nào không hợp lệ
+    // Validate error messages
     const invalidInputs = await page.evaluate(() => {
       return document.querySelectorAll("input:invalid, textarea:invalid")
         .length;
@@ -15,10 +18,10 @@ test.describe("Form Validation", () => {
     expect(invalidInputs).toBeGreaterThan(0);
   });
 
-  test("Submit form thành công", async ({ page }) => {
-    await page.goto("/pages/contact");
+  test("Submit form successfully", async ({ page }) => {
+    await page.goto(`${BASE_URL}/${path}`);
 
-    // Điền form với XPath chính xác
+    //Fill form
     await page.fill('//*[@id="ContactForm-first_name"]', "John");
     await page.fill('//*[@id="ContactForm-last_name"]', "Doe");
     await page.fill('//*[@id="ContactForm-phone"]', "0400000000");
@@ -26,17 +29,17 @@ test.describe("Form Validation", () => {
     await page.selectOption('//*[@id="ContactForm-select"]', "Now");
     await page.fill('//*[@id="ContactForm-body"]', "This is a test message.");
 
-    // Nhấn nút gửi form
+    // Submit form
     await page.click('//button[contains(text(), "Send Enquiry")]');
 
-    // Chờ CAPTCHA xuất hiện
+    // Wait for CAPTCHA to load
     const captcha = page.locator('//div[contains(@class, "h-captcha")]');
     if (await captcha.isVisible({ timeout: 5000 })) {
       console.log("⚠️ CAPTCHA detected! Please solve it manually.");
-      await page.waitForTimeout(30000); // Cho phép nhập CAPTCHA thủ công
+      await page.waitForTimeout(30000); // Wait for CAPTCHA to be solved
     }
 
-    // Kiểm tra thông báo gửi thành công sau CAPTCHA
+    // Verify success message
     await expect(
       page.locator('//div[contains(@class, "success-message")]')
     ).toBeVisible({ timeout: 10000 });

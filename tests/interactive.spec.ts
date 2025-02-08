@@ -1,4 +1,5 @@
 import { test, expect, Page } from "@playwright/test";
+import { BASE_URL } from "../config";
 
 // Dropdown
 async function testDropdowns(page: Page) {
@@ -142,7 +143,7 @@ test.describe("Interactive UI Tests", () => {
   pages.forEach((path) => {
     test(`UI Components on ${path}`, async ({ page }) => {
       console.log(`\nTesting page: ${path}`);
-      await page.goto(`https://www.opencolleges.edu.au${path}`);
+      await page.goto(`${BASE_URL}${path}`);
       await page.waitForLoadState("networkidle"); // Ensure content is fully loaded
 
       await testDropdowns(page);

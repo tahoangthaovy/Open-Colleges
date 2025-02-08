@@ -1,23 +1,21 @@
 import { Page, Locator } from "@playwright/test";
+import { BasePage } from "./BasePage";
+import { BASE_URL } from "../config";
 
-export class ContactPage {
-  private readonly page: Page;
-
-  // Locators
+export class ContactPage extends BasePage {
   readonly firstNameInput: Locator;
   readonly emailError: Locator;
   readonly successMessage: Locator;
 
   constructor(page: Page) {
-    this.page = page;
+    super(page);
     this.firstNameInput = page.locator("#firstName");
     this.emailError = page.locator("#email-error");
     this.successMessage = page.locator(".success-message");
   }
 
   async navigate() {
-    await this.page.goto("https://www.opencolleges.edu.au/pages/contact");
-    //await this.page.waitForLoadState("networkidle");
+    await super.navigate("/pages/contact");
   }
 
   async fillForm(data: {

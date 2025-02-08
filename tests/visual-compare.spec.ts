@@ -1,20 +1,21 @@
 import { test, expect } from "@playwright/test";
 import fs from "fs";
 import path from "path";
+import { BASE_URL } from "../config";
 
 const productionURL = "https://www.opencolleges.edu.au/";
-const previewURL = "https://lbzmqrtkof28447f-69536973119.shopifypreview.com/";
+const previewURL = BASE_URL;
 
 const snapshotDir = path.join(__dirname, "snapshots");
 
-// 📌 Hàm chụp ảnh và lưu expectation nếu chưa có
+// 📌 Screenshot and save expectation
 async function captureSnapshot(page, name, isProduction) {
   const filePath = path.join(
     snapshotDir,
     `${name}-${isProduction ? "production" : "preview"}.png`
   );
 
-  // Chụp màn hình
+  // Screenshot
   await page.screenshot({ path: filePath, fullPage: true });
 
   console.log(`📸 Captured: ${filePath}`);
@@ -23,21 +24,21 @@ async function captureSnapshot(page, name, isProduction) {
 
 test.describe("UI Regression: Compare Production & Preview", () => {
   test("Capture & Compare All Pages", async ({ page }) => {
-    // Tạo thư mục snapshots nếu chưa có
+    // Create folder snapshots if not exists
     if (!fs.existsSync(snapshotDir)) fs.mkdirSync(snapshotDir);
 
     const pagesToTest = [
       { name: "home", url: "" },
-      { name: "courses", url: "collections/all" },
-      { name: "about-us", url: "pages/about-us" },
-      { name: "faqs", url: "pages/faqs" },
-      { name: "contact", url: "pages/contact" },
+      { name: "courses", url: "/collections/all" },
+      { name: "about-us", url: "/pages/about-us" },
+      { name: "faqs", url: "/pages/faqs" },
+      { name: "contact", url: "/pages/contact" },
     ];
 
     for (const { name, url } of pagesToTest) {
       console.log(`🔍 Testing page: ${name}`);
 
-      // 👉 Truy cập Preview và chụp ảnh để so sánh
+      // 👉 Go to Preview theme and screenshot
       await page.goto(previewURL + url);
       const previewSnapshot = await captureSnapshot(page, name, false);
 
@@ -47,7 +48,7 @@ test.describe("UI Regression: Compare Production & Preview", () => {
         const productionSnapshot = await captureSnapshot(page, name, true);
         await expect(page).toHaveScreenshot(productionSnapshot);
         await expect(page).toHaveScreenshot(productionSnapshot, {
-          threshold: 0.1, // Cho phép khác biệt nhỏ (10%)
+          threshold: 0.1, // 10% threshold
         });
       } catch (error) {
         console.warn(`⚠️ Preview snapshot mismatch on: ${name}`);

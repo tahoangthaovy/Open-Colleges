@@ -18,10 +18,10 @@ test.describe("Course Search and Sort", () => {
     await test.step("Perform search for 'Management'", async () => {
       await homePage.searchCourse("Management");
 
-      // Chờ kết quả tìm kiếm hiển thị
+      //  Check if search results are displayed
       await page.waitForSelector("#ProductGridContainer", { timeout: 10000 });
 
-      // Kiểm tra ít nhất có 1 kết quả
+      //    Check if any courses were found
       await page.waitForTimeout(3000);
       const courseCount = await coursePage.getCourseCount();
       console.log(`🔍 Debug: Found ${courseCount} courses for "Management"`);
@@ -30,20 +30,20 @@ test.describe("Course Search and Sort", () => {
 
     await test.step("Verify sorting dropdown is available", async () => {
       const sortDropdown = page.locator("//*[@id='SortBy']").first();
-      await expect(sortDropdown).toBeVisible(); // Kiểm tra dropdown hiển thị
-      await sortDropdown.selectOption({ label: "Price, low to high" }); // Chọn "Price, low to high"
+      await expect(sortDropdown).toBeVisible();
+      await sortDropdown.selectOption({ label: "Price, low to high" }); //
     });
 
     await test.step("Sort by 'Price: Low to High' and verify sorting applied", async () => {
       await coursePage.sortBy("Price, low to high");
-      await page.waitForTimeout(3000); // Chờ sorting áp dụng
+      await page.waitForTimeout(3000); //
 
-      // Kiểm tra URL có cập nhật đúng không
+      // Check if sorting is applied
       const currentURL = page.url();
       console.log(`🔍 Debug: Current URL after sorting: ${currentURL}`);
       expect(currentURL).toContain("sort_by=price-ascending");
 
-      // Kiểm tra danh sách khóa học có sắp xếp đúng không
+      // Check if courses are sorted correctly
       const coursePrices = await coursePage.getCoursePrices();
       const sortedPrices = [...coursePrices].sort((a, b) => a - b);
       expect(coursePrices).toEqual(sortedPrices);
@@ -54,12 +54,12 @@ test.describe("Course Search and Sort", () => {
       await coursePage.sortBy("price-descending");
       await page.waitForTimeout(3000);
 
-      // Kiểm tra URL cập nhật đúng Sort By không
+      // Check if sorting is applied
       const currentURL = page.url();
       console.log(`🔍 Debug: Current URL after sorting: ${currentURL}`);
       expect(currentURL).toContain("sort_by=price-descending");
 
-      // Kiểm tra danh sách khóa học có sắp xếp đúng không
+      // Check if courses are sorted correctly
       const coursePrices = await coursePage.getCoursePrices();
       const sortedPrices = [...coursePrices].sort((a, b) => b - a);
       expect(coursePrices).toEqual(sortedPrices);

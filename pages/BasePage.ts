@@ -1,4 +1,5 @@
 import { Page } from "@playwright/test";
+import { BASE_URL } from "../config";
 
 export class BasePage {
   protected page: Page;
@@ -6,7 +7,7 @@ export class BasePage {
     this.page = page;
   }
 
-  async navigate(url: string) {
-    await this.page.goto(url);
+  async navigate(path: string = "") {
+    await this.page.goto(`${BASE_URL}${path}`);
   }
 }

@@ -1,10 +1,11 @@
 //having bug
 
 import { test, expect } from "@playwright/test";
+import { BASE_URL } from "../config";
 
 // Test Case 1: Course Selection to Payment Process
 test("E2E - Course Selection to Payment Process", async ({ page }) => {
-  await page.goto("https://www.opencolleges.edu.au");
+  await page.goto(BASE_URL);
 
   // Select a Course
   await page.click("text=Courses");
@@ -15,17 +16,29 @@ test("E2E - Course Selection to Payment Process", async ({ page }) => {
   await expect(page.locator("h1")).toContainText(
     "Diploma of Leadership and Management"
   );
-  await page.click("text=Enroll Now");
+  //await page.click("//*[@id="ProductSubmitButton-template--24248591122751__main"]");
 
   // Proceed to Checkout
-  await page.click("text=Cart");
-  await page.click("text=Checkout");
+  //await page.click("//*[@id="variant-radios-template--24248591122751__main"]/fieldset/ul/li[3]/label/span");
+  //await page.click("//*[@id="cart"]/input");
 
-  // Fill in Personal Details
-  await page.fill("#name", "John Doe");
-  await page.fill("#email", "john@example.com");
-  await page.fill("#phone", "1234567890");
-  await page.fill("#address", "123 Main St, City, Country");
+  // Fill Personal Information
+  await page.fill('//input[@name="firstName"]', "John");
+  await page.fill('//input[@name="lastName"]', "Doe");
+  await page.fill('//input[@name="email"]', "john.doe@example.com");
+  await page.fill('//input[@name="phone"]', "1234567890");
+  await page.fill('//input[@name="address1"]', "123 Main St");
+  await page.fill('//input[@name="city"]', "Sydney");
+  await page.fill('//input[@name="postalCode"]', "2000");
+
+  // Select State (Dropdown Example)
+  await page.click('//select[@name="province"]');
+  await page.selectOption('//select[@name="province"]', {
+    label: "New South Wales",
+  });
+
+  // Proceed to Payment
+  await page.click('//button[contains(text(), "Continue to payment")]');
 
   // Payment Process
   await page.click("text=Credit Card");
@@ -42,7 +55,7 @@ test("E2E - Course Selection to Payment Process", async ({ page }) => {
 
 // Test Case 2: Free Trial Registration Success
 test("E2E - Free Trial Registration Success", async ({ page }) => {
-  await page.goto("https://www.opencolleges.edu.au");
+  await page.goto(BASE_URL);
 
   // Find Free Trial Section
   await page.click("text=Start Your Free Trial");

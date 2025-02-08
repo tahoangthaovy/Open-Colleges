@@ -1,5 +1,5 @@
 import { defineConfig, devices } from "@playwright/test";
-
+import { BASE_URL } from "./config";
 /**
  * Read environment variables from file.
  * https://github.com/motdotla/dotenv
@@ -26,7 +26,7 @@ export default defineConfig({
   reporter: "html",
   /* Shared settings for all the projects below. See https://playwright.dev/docs/api/class-testoptions. */
   use: {
-    baseURL: "https://www.opencolleges.edu.au",
+    baseURL: BASE_URL,
     browserName: "chromium",
     headless: true,
     screenshot: "on",

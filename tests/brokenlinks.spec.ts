@@ -1,13 +1,8 @@
 //handle timeout
 
-import {
-  test,
-  expect,
-  request,
-  Page,
-  expect as expectPlaywright,
-} from "@playwright/test";
+import { test, expect } from "@playwright/test";
 import * as fs from "fs";
+import { BASE_URL } from "../config";
 
 // test("Extract all links from the page", async ({ page }) => {
 //   await page.goto("https://www.opencolleges.edu.au/");
@@ -52,10 +47,9 @@ import * as fs from "fs";
 // });
 
 test("Extract all links from the page", async ({ page }) => {
-  const baseUrl = "https://www.opencolleges.edu.au/";
-  await page.goto(baseUrl);
+  await page.goto(BASE_URL);
 
-  // Lấy danh sách tất cả các link hợp lệ
+  // Get full valid URLs from the page
   const links = await page.$$eval("a", (anchors) =>
     anchors
       .map((a) => a.href)
@@ -72,19 +66,19 @@ test("Extract all links from the page", async ({ page }) => {
 
   console.log(`🔍 Found ${links.length} links to test`);
 
-  // Tạo file log để lưu link bị lỗi
+  // Create a log file to save broken links
   const logFile = "broken-links.log";
   fs.writeFileSync(logFile, "Broken Links:\n", "utf8");
 
-  // Thời gian nghỉ giữa mỗi request (giúp tránh bị chặn)
+  // Delay between requests to avoid being blocked
   const DELAY_BETWEEN_REQUESTS = 2000; // 2 giây
 
-  // Duyệt từng link và kiểm tra response
+  // Test each link
   for (const [index, link] of links.entries()) {
     console.log(`🔗 Checking (${index + 1}/${links.length}): ${link}`);
 
     try {
-      // Dùng context.request.get() để không phụ thuộc vào trang hiện tại
+      // Test each link with a 5-second timeout
       const response = await page.request.get(link, { timeout: 5000 });
 
       if (response.status() >= 400) {
@@ -98,7 +92,7 @@ test("Extract all links from the page", async ({ page }) => {
       fs.appendFileSync(logFile, `${link} - FAILED TO LOAD\n`);
     }
 
-    // Nghỉ 2 giây trước khi kiểm tra link tiếp theo để tránh bị chặn
+    // Delay between requests to avoid being blocked
     await page.waitForTimeout(DELAY_BETWEEN_REQUESTS);
   }
 

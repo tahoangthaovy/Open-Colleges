@@ -1,15 +1,13 @@
 import { Page, Locator } from "@playwright/test";
+import { BasePage } from "./BasePage";
 
-export class CoursePage {
-  private readonly page: Page;
-
-  // Locators
+export class CoursePage extends BasePage {
   readonly searchResults: Locator;
   readonly courseCards: Locator;
   readonly sortDropdown: Locator;
 
   constructor(page: Page) {
-    this.page = page;
+    super(page);
     this.searchResults = page.locator("#ProductGridContainer");
     this.courseCards = page.locator("#ProductGridContainer .grid__item");
     this.sortDropdown = page.locator("#SortBy").first();
