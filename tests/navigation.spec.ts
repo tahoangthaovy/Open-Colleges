@@ -1,5 +1,6 @@
 import { test, expect } from "@playwright/test";
 import { HomePage } from "../pages/HomePage";
+import { BASE_URL } from "../config";
 
 test.describe("Core Navigation", () => {
   let homePage: HomePage;
@@ -43,8 +44,9 @@ test.describe("Core Navigation", () => {
       await expect(url.pathname).toBe(`${link.url}`);
     }
   });
-  /* NEED TO UPDATE XPATHS
-  
+
+  //Issue on Mobile site
+
   test("Verify mobile menu links redirect", async ({ page }) => {
     const viewport = { width: 375, height: 812 }; // iPhone X
     const hamburgerSelector =
@@ -85,5 +87,4 @@ test.describe("Core Navigation", () => {
       await verifyLinkRedirection(link);
     }
   });
-  */
 });

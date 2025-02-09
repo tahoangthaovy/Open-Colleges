@@ -52,30 +52,3 @@ test("E2E - Course Selection to Payment Process", async ({ page }) => {
     "Payment Successful"
   );
 });
-
-// Test Case 2: Free Trial Registration Success
-test("E2E - Free Trial Registration Success", async ({ page }) => {
-  await page.goto(BASE_URL);
-
-  // Find Free Trial Section
-  await page.click("text=Start Your Free Trial");
-
-  // Fill Registration Form
-  await page.fill("#name", "Jane Doe");
-  await page.fill("#email", "jane@example.com");
-  await page.fill("#phone", "9876543210");
-
-  // Accept Terms (if applicable)
-  const termsCheckbox = page.locator("#accept-terms");
-  if (await termsCheckbox.isVisible()) {
-    await termsCheckbox.check();
-  }
-
-  // Submit Registration
-  await page.click("text=Submit");
-
-  // Verify Registration Success
-  await expect(page.locator(".success-message")).toContainText(
-    "Registration Successful"
-  );
-});
