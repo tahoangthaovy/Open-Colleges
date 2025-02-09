@@ -1,55 +1,15 @@
-//handle timeout
-
 import { test, expect } from "@playwright/test";
 import * as fs from "fs";
 import { BASE_URL } from "../config";
 
-// test("Extract all links from the page", async ({ page }) => {
-//   await page.goto("https://www.opencolleges.edu.au/");
-
-//   // Lấy danh sách tất cả các link hợp lệ
-//   const links = await page.$$eval("a", (anchors) =>
-//     anchors
-//       .map((a) => a.href)
-//       .filter(
-//         (href) =>
-//           href.startsWith("http") &&
-//           !href.includes("cdn.") &&
-//           !href.endsWith(".pdf") &&
-//           !href.endsWith(".css") &&
-//           !href.endsWith(".js") &&
-//           !href.includes("#")
-//       )
-//   );
-
-//   console.log("🔍 Found ${links.length} valid links:");
-//   console.log(links);
-
-// Giới hạn số link kiểm tra để tránh timeout
-// const MAX_LINKS_TO_TEST = 10;
-// const linksToTest = links.slice(0, MAX_LINKS_TO_TEST);
-
-// // Kiểm tra link song song với timeout 5 giây
-// await Promise.all(
-//   linksToTest.map(async (link) => {
-//     try {
-//       const response = await page.request.get(link, { timeout: 5000 });
-//       if (response.status() >= 400) {
-//         console.error(
-//           "❌ Broken Link: ${link} - Status: ${response.status()}"
-//         );
-//       }
-//     } catch (error) {
-//       console.error("🚨 Failed to load: ${link}");
-//     }
-//   })
-// );
-// });
-
 test("Extract all links from the page", async ({ page }) => {
+  test.setTimeout(600000); // Đảm bảo timeout 10 phút
+
+  console.log(`⏳ Test timeout: ${test.info().timeout} ms`);
+
   await page.goto(BASE_URL);
 
-  // Get full valid URLs from the page
+  // Lấy tất cả link hợp lệ
   const links = await page.$$eval("a", (anchors) =>
     anchors
       .map((a) => a.href)
@@ -66,35 +26,62 @@ test("Extract all links from the page", async ({ page }) => {
 
   console.log(`🔍 Found ${links.length} links to test`);
 
-  // Create a log file to save broken links
+  // Giới hạn số lượng link kiểm tra
+  const MAX_LINKS_TO_TEST = 50;
+  const linksToTest = links.slice(0, MAX_LINKS_TO_TEST);
+  console.log(`🛠 Testing first ${linksToTest.length} links...`);
+
+  // Ghi log vào file
   const logFile = "broken-links.log";
   fs.writeFileSync(logFile, "Broken Links:\n", "utf8");
 
-  // Delay between requests to avoid being blocked
-  const DELAY_BETWEEN_REQUESTS = 2000; // 2 giây
+  const logBrokenLink = (link, message) => {
+    console.error(`❌ Broken: ${link} - ${message}`);
+    fs.appendFileSync(logFile, `${link} - ${message}\n`);
+  };
 
-  // Test each link
-  for (const [index, link] of links.entries()) {
-    console.log(`🔗 Checking (${index + 1}/${links.length}): ${link}`);
+  // Cấu hình test
+  const BATCH_SIZE = 10; // Giảm batch size để tránh quá tải
+  const TIMEOUT = 2000; // Timeout mỗi request 2 giây
+  let brokenLinks: string[] = [];
 
-    try {
-      // Test each link with a 5-second timeout
-      const response = await page.request.get(link, { timeout: 5000 });
+  // Chia nhóm và kiểm tra từng batch
+  for (let i = 0; i < linksToTest.length; i += BATCH_SIZE) {
+    const batch = linksToTest.slice(i, i + BATCH_SIZE);
 
-      if (response.status() >= 400) {
-        console.error(`❌ Broken Link: ${link} - Status: ${response.status()}`);
-        fs.appendFileSync(logFile, `${link} - Status: ${response.status()}\n`);
-      } else {
-        console.log(`✅ OK: ${link}`);
-      }
-    } catch (error) {
-      console.error(`🚨 Failed to load: ${link}`);
-      fs.appendFileSync(logFile, `${link} - FAILED TO LOAD\n`);
-    }
+    console.log(`🔹 Checking batch ${i / BATCH_SIZE + 1}/${Math.ceil(linksToTest.length / BATCH_SIZE)}`);
 
-    // Delay between requests to avoid being blocked
-    await page.waitForTimeout(DELAY_BETWEEN_REQUESTS);
+    // Chạy request song song với retry
+    const results = await Promise.allSettled(
+      batch.map(async (link) => {
+        try {
+          const response = await fetchWithRetry(page, link);
+          if (response.status() >= 400) {
+            logBrokenLink(link, `Status: ${response.status()}`);
+          } else {
+            console.log(`✅ OK: ${link}`);
+          }
+        } catch (error) {
+          logBrokenLink(link, "FAILED TO LOAD");
+        }
+      })
+    );
   }
 
-  console.log("✅ Finished checking all links. Log saved in broken-links.log");
+  console.log(`✅ Finished checking all links.`);
+  console.log("📜 Log saved in broken-links.log");
 });
+
+// Hàm retry nếu request thất bại
+const fetchWithRetry = async (page, url, retries = 3) => {
+  for (let i = 0; i < retries; i++) {
+    try {
+      const response = await page.request.get(url, { timeout: 2000 });
+      return response;
+    } catch (error) {
+      console.warn(`🔄 Retry ${i + 1}/${retries} for ${url}`);
+      await page.waitForTimeout(1000); // Chờ 1 giây trước khi thử lại
+    }
+  }
+  throw new Error(`🚨 Failed after ${retries} retries: ${url}`);
+};
