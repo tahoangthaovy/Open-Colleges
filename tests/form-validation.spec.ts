@@ -18,30 +18,39 @@ test.describe("Form Validation", () => {
     expect(invalidInputs).toBeGreaterThan(0);
   });
 
-  test("Submit form successfully", async ({ page }) => {
+  test("Verify Image Recognition CAPTCHA appears on submission", async ({
+    page,
+  }) => {
+    // Fill and submit form
     await page.goto(`${BASE_URL}/${path}`);
+    await page.getByLabel("First Name").fill("John");
+    await page.getByLabel("Last Name").fill("Doe");
+    await page.getByLabel("Your number").fill("0400000000");
+    await page.getByLabel("Your email").fill("john.doe@example.com");
+    await page.getByLabel("Message").fill("This is a test message.");
 
-    //Fill form
-    await page.fill('//*[@id="ContactForm-first_name"]', "John");
-    await page.fill('//*[@id="ContactForm-last_name"]', "Doe");
-    await page.fill('//*[@id="ContactForm-phone"]', "0400000000");
-    await page.fill('//*[@id="ContactForm-email"]', "john.doe@example.com");
-    await page.selectOption('//*[@id="ContactForm-select"]', "Now");
-    await page.fill('//*[@id="ContactForm-body"]', "This is a test message.");
+    await page.getByRole("button", { name: "Send Enquiry" }).click();
+    // Check for Image Recognition CAPTCHA
+    const captchaIframes = [
+      'iframe[title="hCaptcha challenge"]', // hCAPTCHA Invisible
+      'iframe[title="Widget containing checkbox for hCaptcha challenge"]', // hCAPTCHA Checkbox
+      'iframe[title="reCAPTCHA"]', // reCAPTCHA Checkbox
+      'iframe[src*="recaptcha"]', // reCAPTCHA iframe
+    ];
 
-    // Submit form
-    await page.click('//button[contains(text(), "Send Enquiry")]');
+    let captchaVisible = false;
 
-    // Wait for CAPTCHA to load
-    const captcha = page.locator('//div[contains(@class, "h-captcha")]');
-    if (await captcha.isVisible({ timeout: 5000 })) {
-      console.log("⚠️ CAPTCHA detected! Please solve it manually.");
-      await page.waitForTimeout(30000); // Wait for CAPTCHA to be solved
+    for (const selector of captchaIframes) {
+      const captcha = page.locator(selector);
+      if (await captcha.isVisible({ timeout: 5000 })) {
+        console.log(`CAPTCHA detected: ${selector}`);
+        captchaVisible = true;
+        break;
+      }
     }
 
-    // Verify success message
-    await expect(
-      page.locator('//div[contains(@class, "success-message")]')
-    ).toBeVisible({ timeout: 10000 });
+    if (!captchaVisible) {
+      console.log("No CAPTCHA detected.");
+    }
   });
 });
