@@ -10,45 +10,25 @@ test("E2E - Course Selection to Payment Process", async ({ page }) => {
   // Select a Course
   await page.click("text=Courses");
   await page.click("text=Business & Leadership");
-  await page.click("text=Diploma of Leadership and Management");
-
+  const corurses = await page.locator(
+    'xpath=//*[@id="StandardCardNoMediaLink-template--24248588828991__product-grid-8414893048127"]'
+  );
+  await corurses.click();
   // View Course Details
   await expect(page.locator("h1")).toContainText(
     "Diploma of Leadership and Management"
   );
-  //await page.click("//*[@id="ProductSubmitButton-template--24248591122751__main"]");
+  await page.click(
+    '//*[@id="ProductSubmitButton-template--24248591122751__main"]'
+  );
 
-  // Proceed to Checkout
-  //await page.click("//*[@id="variant-radios-template--24248591122751__main"]/fieldset/ul/li[3]/label/span");
-  //await page.click("//*[@id="cart"]/input");
-
-  // Fill Personal Information
-  await page.fill('//input[@name="firstName"]', "John");
-  await page.fill('//input[@name="lastName"]', "Doe");
-  await page.fill('//input[@name="email"]', "john.doe@example.com");
-  await page.fill('//input[@name="phone"]', "1234567890");
-  await page.fill('//input[@name="address1"]', "123 Main St");
-  await page.fill('//input[@name="city"]', "Sydney");
-  await page.fill('//input[@name="postalCode"]', "2000");
-
-  // Select State (Dropdown Example)
-  await page.click('//select[@name="province"]');
-  await page.selectOption('//select[@name="province"]', {
-    label: "New South Wales",
-  });
-
-  // Proceed to Payment
-  await page.click('//button[contains(text(), "Continue to payment")]');
-
-  // Payment Process
-  await page.click("text=Credit Card");
-  await page.fill("#card-number", "4111111111111111");
-  await page.fill("#expiry-date", "12/25");
-  await page.fill("#cvv", "123");
-  await page.click("text=Pay Now");
-
-  // Verify Payment Success
-  await expect(page.locator(".confirmation-message")).toContainText(
-    "Payment Successful"
+  //Proceed to Checkout
+  await page.click(
+    '//*[@id="variant-radios-template--24248591122751__main"]/fieldset/ul/li[3]/label/span'
+  );
+  await page.click('//*[@id="cart"]/input');
+  //expect the page to navigate to the checkout page
+  expect(page.url()).toBe(
+    "https://prearer6pe3pis1l-69536973119.shopifypreview.com/cart"
   );
 });

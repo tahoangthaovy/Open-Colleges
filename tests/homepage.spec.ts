@@ -92,6 +92,7 @@ test.describe("Homepage Functionality", () => {
 
   // ✅ Test 4: Verify Responsive Design
   test("Verify homepage responsiveness on mobile", async ({ page }) => {
+    await page.goto(BASE_URL);
     await page.setViewportSize({ width: 375, height: 812 }); // Set before navigation
     await homePage.navigate(); // Moved this here
 
@@ -115,5 +116,41 @@ test.describe("Homepage Functionality", () => {
     console.log(`⏳ Page load time: ${loadTime.toFixed(2)}ms`);
 
     expect(loadTime).toBeLessThan(3000);
+  });
+  // ✅ Test 6: Verify Banner and text
+  test("Verify Banner and text", async ({ page }) => {
+    await page.goto(BASE_URL);
+    //check banner
+    const banner = page.locator('xpath=//*[@id="slick-slide00"]');
+    await expect(banner)
+      .toBeVisible()
+      .then(() => {
+        console.log("Banner is visible");
+      });
+
+    //check banner text
+
+    const bannerText = page.locator(
+      'xpath=//*[@id="shopify-section-template--24248589123903__pd_new_hero_banner_8mp7Vb"]'
+    );
+    await expect(bannerText)
+      .toBeVisible()
+      .then(() => {
+        console.log("Banner text is visible");
+      });
+  });
+  // ✅ Test 7: Verify the CTA button functionality (redirection to a detailed information page).
+  test("Verify the CTA button functionality", async ({ page }) => {
+    await page.goto(BASE_URL);
+    const ctaButton = page.locator(
+      'xpath=//*[@id="shopify-section-template--24248589123903__pd_new_hero_banner_8mp7Vb"]'
+    );
+    await ctaButton.click();
+    await page.waitForLoadState("load");
+    const currentURL = new URL(page.url());
+    console.log(
+      `🔍 Debug: Expected base URL: ${BASE_URL}, Actual: ${currentURL}`
+    );
+    expect(currentURL).toBe(BASE_URL);
   });
 });
